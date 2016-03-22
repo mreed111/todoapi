@@ -33,7 +33,7 @@ app.get('/todos/:id', function(request, response) {
     var i = 0;
     do {
         i++;
-        if (i = request.params.id) {
+        if (i === request.params.id) {
             matchedTodo = todos[i];
         }
     } while ( i <= todos.length && matchedTodo );
