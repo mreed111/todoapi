@@ -1,21 +1,18 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 
 var app = express();
 var PORT = process.env.PORT || 3000;
 
-var todos = [{
-    id: 1,
-    description: 'eat lunch',
-    completed: false
-}, {
-    id: 2,
-    description: 'swim',
-    completed: false
-},{
-    id: 3,
-    description: 'nap',
-    completed: true
-}];
+var todos = [];
+var todoNextId = 1;
+
+/*
+the body-parser npm is express.js middleware.  This command
+will parse inputs as json and make them accessible via 
+request.body
+*/
+app.use(bodyParser.json());
 
 app.get('/', function (request, response) {
     response.send('Todo API Root');
@@ -43,6 +40,21 @@ app.get('/todos/:id', function(request, response) {
     } else {
         response.status(404).send();
     }
+});
+
+// POST /todos
+app.post('/todos', function(request, response) {
+    var body = request.body;
+    
+    // add id field to data body
+    body.id = todoNextId++;
+    
+    // push body into array
+    todos.push(body);
+    
+    //console.log('description: ' + body.description);
+    
+    response.json(body);
 });
 
 app.listen(PORT, function () {
