@@ -3,8 +3,32 @@ var express = require('express');
 var app = express();
 var PORT = process.env.PORT || 3000;
 
+var todos = [{
+    id: 1,
+    description: 'eat lunch',
+    completed: false
+}, {
+    id: 2,
+    description: 'swim',
+    completed: false
+},{
+    id: 3,
+    description: 'nap',
+    completed: true
+}];
+
 app.get('/', function (request, response) {
     response.send('Todo API Root');
+});
+
+//GET /todos
+app.get('/todos', function(request, response) {
+    response.json(todos);
+});
+
+//GET /todos/:id
+app.get('/todos/:id', function(request, response) {
+    response.send('Asking for todo with ID of ' + request.params.id);
 });
 
 app.listen(PORT, function () {
