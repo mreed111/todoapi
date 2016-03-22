@@ -28,7 +28,22 @@ app.get('/todos', function(request, response) {
 
 //GET /todos/:id
 app.get('/todos/:id', function(request, response) {
-    response.send('Asking for todo with ID of ' + request.params.id);
+    var todoID = request.params.id;
+    var matchedTodo;
+    var i = 0;
+    do {
+        i++;
+        if (i = request.params.id) {
+            matchedTodo = todos[i];
+        }
+    } while ( i <= todos.length && matchedTodo );
+    if (matchedTodo) {
+        response.json(matchedTodo);
+    } else {
+        response.status(404).send();
+    }
+    
+    //response.send('Asking for todo with ID of ' + request.params.id);
 });
 
 app.listen(PORT, function () {
