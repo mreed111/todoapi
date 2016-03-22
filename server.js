@@ -31,23 +31,18 @@ app.get('/todos/:id', function(request, response) {
     var todoID = request.params.id;
     var matchedTodo;
     var i = 0;
-    console.log('Asking for todo with ID of ' + request.params.id);
     do {
         i++;
-        console.log('comparing ID of ' + i);
         if (String(i) === request.params.id) {
             matchedTodo = todos[i];
-            console.log('found...');
         }
     } while ( i <= todos.length && !matchedTodo );
-    console.log('matchedTodo = ' + matchedTodo);
+    
     if (matchedTodo) {
         response.json(matchedTodo);
     } else {
         response.status(404).send();
     }
-    
-    //response.send('Asking for todo with ID of ' + request.params.id);
 });
 
 app.listen(PORT, function () {
