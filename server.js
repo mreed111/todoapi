@@ -31,13 +31,16 @@ app.get('/todos/:id', function(request, response) {
     var todoID = request.params.id;
     var matchedTodo;
     var i = 0;
+    console.log('Asking for todo with ID of ' + request.params.id);
     do {
         i++;
-        console.log('Asking for todo with ID of ' + request.params.id);
+        console.log('comparing ID of ' + i);
         if (i === request.params.id) {
             matchedTodo = todos[i];
+            console.log('found...');
         }
     } while ( i <= todos.length && matchedTodo );
+    console.log('matchedTodo = ' + matchedTodo[i]);
     if (matchedTodo) {
         response.json(matchedTodo);
     } else {
