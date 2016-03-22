@@ -40,7 +40,7 @@ app.get('/todos/:id', function(request, response) {
             console.log('found...');
         }
     } while ( i <= todos.length && matchedTodo );
-    console.log('matchedTodo = ' + matchedTodo[i]);
+    console.log('matchedTodo = ' + matchedTodo);
     if (matchedTodo) {
         response.json(matchedTodo);
     } else {
