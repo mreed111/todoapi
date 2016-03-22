@@ -35,7 +35,7 @@ app.get('/todos/:id', function(request, response) {
     do {
         i++;
         console.log('comparing ID of ' + i);
-        if (i === request.params.id) {
+        if (String(i) === request.params.id) {
             matchedTodo = todos[i];
             console.log('found...');
         }
