@@ -33,7 +33,7 @@ app.get('/todos', function(request, response) {
     // if description contains param q
     if (queryParams.hasOwnProperty('q') && queryParams.q.trim().length > 0) {
         filteredTodos = _.filter(filteredTodos, function(todo) {
-            return todo.description.toLowerCase().indexOf(queryParams.q) > -1;
+            return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
         });
     } 
     
