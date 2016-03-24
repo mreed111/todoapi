@@ -22,36 +22,65 @@ app.get('/', function (request, response) {
 
 //GET /todos
 app.get('/todos', function(request, response) {
-    var queryParams = request.query;
-    var filteredTodos = todos;
-    
+    var query = request.query;
+    var where = {};
+
+    if (query.hasOwnProperty('completed') && query.completed === 'true') {
+        where.completed = true;
+    } else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+        where.completed = false;
+    }
+    if (query.hasOwnProperty('q') && query.q.length > 0) {
+        where.description = {
+            $like: '%' + query.q + '%'
+        };
+    }
+
+    db.todo.findAll({where: where}).then(function(todos) {
+        response.json(todos);
+    }, function (e) {
+        response.status(500).send();
+    });
+
+/*    var filteredTodos = todos;
+
     // if has prop && completed === 'true'
     if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-        filteredTodos = _.where(filteredTodos, {completed: true});
+        filteredTodos = _.where(filteredTodos, {
+            completed: true
+        });
     } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-        filteredTodos = _.where(filteredTodos, {completed: false});
+        filteredTodos = _.where(filteredTodos, {
+            completed: false
+        });
     }
     // if description contains param q
     if (queryParams.hasOwnProperty('q') && queryParams.q.trim().length > 0) {
         filteredTodos = _.filter(filteredTodos, function(todo) {
             return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
         });
-    } 
-    
+    }
+
     //console.log(filteredTodos);
     response.json(filteredTodos);
+*/
+
 });
 
 //GET /todos/:id
 app.get('/todos/:id', function(request, response) {
     var todoID = parseInt(request.params.id, 10);
-    var matchedTodo = _.findWhere(todos, {id: todoID});
-    
-    if (matchedTodo) {
-        response.json(matchedTodo);
-    } else {
-        response.status(404).send();
-    }
+
+    db.todo.findById(todoID).then(function(todo) {
+        if (!!todo) {
+            response.json(todo.toJSON());
+        } else {
+            console.log('No todo with ID: ' + request.params.id + ' found!');
+            response.status(404).send();
+        }
+    }, function (e) {
+        response.status(500).json(e);
+    });
 });
 
 // POST /todos
@@ -133,7 +162,7 @@ app.put('/todos/:id', function (request, response) {
 });
 
 db.sequelize.sync({
-                    force: true
+                    //force: true
 }).then(function () {
     app.listen(PORT, function () {
         console.log('Express listening on port ' + PORT + '!');
