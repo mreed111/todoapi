@@ -136,7 +136,7 @@ app.post('/users', function(request, response) {
     var body = _.pick(request.body, 'email', 'password');
 
     db.user.create(body).then(function (user) {
-        response.json(user.toJSON());
+        response.json(user.toPublicJSON());
     }, function (e) {
         response.status(400).json(e);
     });
@@ -144,7 +144,7 @@ app.post('/users', function(request, response) {
 
 
 db.sequelize.sync({
-                    //force: true
+                   // force: true
 }).then(function () {
     app.listen(PORT, function () {
         console.log('Express listening on port ' + PORT + '!');
