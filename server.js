@@ -72,51 +72,76 @@ app.post('/todos', function(request, response) {
 
 // DELETE /todos/:id
 app.delete('/todos/:id', function (request, response) {
-    var todoID = parseInt(request.params.id);
-    var matchedTodo = _.findWhere(todos, {id: todoID});
-    
-    if (matchedTodo) {
-        todos = _.without(todos, matchedTodo);
-        response.json(matchedTodo);
-    } else {
-        var e = "no todo item found with id: " + request.params.id;
-        response.status(404).json({"error": e});
-    }
+    var todoID = parseInt(request.params.id, 10);
+    var where = { id: todoID };
+
+    db.todo.destroy({ 
+        where: where 
+    }).then(function(rowsDeleted) { // success function
+        if (rowsDeleted === 0) {
+            response.status(404).json({
+                error: 'No todo with ID: ' + request.params.id
+            });
+        } else {
+            // status(204) indicates success + no return value...
+            response.status(204).send()
+        }
+    }, function () { // error function
+        //
+        response.status(500).send();
+    });
 });
 
 // PUT /todos/:id
 app.put('/todos/:id', function (request, response) {
-    var todoID = parseInt(request.params.id);
-    var matchedTodo = _.findWhere(todos, {id: todoID});
-    
+    var todoID = parseInt(request.params.id, 10);
     var body = _.pick(request.body, 'description', 'completed');
-    var validAttributes = {};
-    
-    // find ...
-    if (!matchedTodo) {
-        var e = "no todo item found with id: " + request.params.id;
-        response.status(404).json({"error": e});
+    var where = { id: todoID };
+    var updatedTodoAttributes = {};
+
+    //console.log('body.completed = "' + body.completed + '"')
+    //updatedTodo.completed = true;
+
+    if (body.hasOwnProperty('completed')) {
+        updatedTodoAttributes.completed = body.completed;
     }
-    
-    // validate ...
-    if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-        validAttributes.completed = body.completed;
-    } else if (body.hasOwnProperty('completed')) {
-        // Bad input 'completed' property is not boolean
-        return response.status(400).send();
+    if (body.hasOwnProperty('description')) {
+        updatedTodoAttributes.description = body.description;
     }
-    if (body.hasOwnProperty('description') && 
-        _.isString(body.description) && 
-        body.description.trim().length > 0) {
-        validAttributes.description = body.description.trim();
-    } else if (body.hasOwnProperty('description')) {
-        // Bad input, 'description' property did not pass validation.
-        return response.status(400).send();
-    }
-        
-    // Update ...
-    _.extend(matchedTodo, validAttributes);
-    response.json(matchedTodo);
+
+    //console.log('todoID: ' + request.params.id);
+    //console.log(updatedTodoAttributes);
+
+    db.todo.findById(todoID).then(function (todo) {
+        if (todo) { // success:  todo ID found.  Update and return it.
+            //
+            //console.log(updatedTodoAttributes);
+            todo.update(updatedTodoAttributes).then(function(todo) { // success callback
+                // this function receives the updated todo item
+                //console.log(todo);
+                response.json(todo.toJSON());
+            }, function(e) { // error: todoID was found, but update failed.
+                response.status(400).json(e);
+            });
+        } else { // error:  specified todo ID not found.
+            response.status(404).send();
+        }   
+    }, function () { //error: findById failed.  specified todoID not found.
+        response.status(500).send();
+    });
+
+/*
+    db.todo.update(
+        updatedTodoAttributes,
+        { where: where }    
+    ).then(function(todo) { // success function
+        console.log('...')
+        response.json(todo);
+    }, function () { // error function
+        //
+        response.status(500).send();
+    });
+*/
 });
 
 db.sequelize.sync({
