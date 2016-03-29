@@ -65,6 +65,33 @@ module.exports = function (sequelize, DataTypes) {
 						reject();
 					});
 				});
+			},
+			findByToken: function (token) {
+				return new Promise(function (resolve, reject) {
+					// decode token and decrypt data
+					try {
+						var decodedJWT = jsonWebToken.verify(token, 'randomstring099');
+						var bytes = cryptojs.AES.decrypt(decodedJWT.token, 'abc123!#');
+						var tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
+						// original token data is now in tokenData, which has two pieces.
+						// ID and Type.  Use the ID to locate the user in the db
+						user.findById(tokenData.id).then(function (user) {
+							if (user) {
+								resolve(user);
+							} else {
+								console.error('user not found');
+								reject();
+							}
+						}, function (e) {
+							console.error(e);
+							reject();
+						});
+					} catch (e) {
+						console.error(e);
+						reject();
+					}
+
+				});
 			}
 		},
 		instanceMethods: {
