@@ -67,7 +67,15 @@ app.post('/todos', middleware.requireAuthentication, function(request, response)
     var body = _.pick(request.body, 'description', 'completed');
 
     db.todo.create(body).then(function (todo) {
-        response.json(todo.toJSON());
+        // request.user is set in the requireAuthentication function in middleware.js
+        request.user.addTodo(todo).then(function () {
+            // the .addTodo() function above modified the todo that was created
+            // the .reload() function passes the updated todo to the next item
+            // in the chain.
+            return todo.reload();
+        }).then(function (todo) {
+            response.json(todo.toJSON());
+        });
     }, function (e) {
         response.status(400).json(e);
     });
