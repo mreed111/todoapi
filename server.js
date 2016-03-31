@@ -175,21 +175,46 @@ app.post('/users', function(request, response) {
 app.post('/users/login', function(request, response) {
     //
     var body = _.pick(request.body, 'email', 'password');
+    var userInstance;
 
     db.user.authenticate(body).then(function (user) {
         //
         var token = user.generateToken('authentication');
-        if (token) {
-            response.header('Auth', token).json(user.toPublicJSON());
-        } else {
-            response.status(401).send();
-        }
-    }, function () {
-        //
+        userInstance = user;
+
+        return db.token.create({
+            token: token
+        });
+
+        // if (token) {
+        //     response.header('Auth', token).json(user.toPublicJSON());
+        // } else {
+        //     response.status(401).send();
+        // }
+
+    }).then(function (tokenInstance) {
+        console.log('user token: ' + tokenInstance.get('token'));
+        response.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+    }).catch(function () {
+        // something went wrong.
+        console.log('POST /users/Login ::: ')
         response.status(401).send();
     });
 });
 
+
+// DELETE /users/login
+app.delete('/users/login', middleware.requireAuthentication, function (request, response) {
+    // delete the token instance.
+    console.log('...delete token::: ');
+    request.token.destroy().then(function () {
+        // success
+        response.status(204).send();
+    }).catch(function () {
+        // server error
+        response.status(500).send();
+    });
+});
 
 db.sequelize.sync({
                     force: true
